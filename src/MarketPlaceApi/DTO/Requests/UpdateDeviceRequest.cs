@@ -5,8 +5,12 @@ using System.Threading.Tasks;
 
 namespace MarketPlaceApi.DTO.Requests
 {
-    public class UpdateDeviceRequest : CreateDeviceRequest
+    public class UpdateDeviceRequest
     {
-        public Guid Id { get; set; }
+        public string DeviceIdentifier { get; set; }
+        public string IpAddress { get; set; }
+        public string Type { get; set; }
+        public Guid? ClientId { get; set; }
+        public Guid? BuildingId { get; set; }
     }
 }

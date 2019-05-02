@@ -6,11 +6,13 @@ using Microsoft.Extensions.Logging;
 using MarketPlaceApi.DTO;
 using MarketPlaceApi.DTO.Requests;
 using MarketPlaceApi.Services;
+using System.Collections.Generic;
 
 namespace MarketPlaceApi.Controllers
 {
-    [Route("api/[controller]")]
+    [ApiConventionType(typeof(DefaultApiConventions))]
     [ApiController]
+    [Produces("application/json")]
     public class DevicesController : ControllerBase
     {
         private readonly IDevicesService _devicesService;
@@ -22,44 +24,44 @@ namespace MarketPlaceApi.Controllers
             _logger = logger;
         }
 
-        [HttpPost("AddDevice")]
+        [HttpPost("devices")]
         [ProducesResponseType(typeof(DeviceDto), (int)HttpStatusCode.OK)]
-        [Produces("application/json")]
-        public async Task<IActionResult> AddDevice([FromBody] CreateDeviceRequest createDeviceRequest)
+        public async Task<IActionResult> CreateDevice([FromBody] CreateDeviceRequest createDeviceRequest)
         {
-            var device = await _devicesService.AddDevice(createDeviceRequest);
+            var device = await _devicesService.CreateDevice(createDeviceRequest);
             return Ok(DeviceDto.Map(device));
         }
 
-        [HttpPost("UpdateDevice")]
+        [HttpPost("devices/{deviceId}")]
         [ProducesResponseType(typeof(DeviceDto), (int)HttpStatusCode.OK)]
-        [Produces("application/json")]
-        public async Task<IActionResult> UpdateDevice([FromBody] UpdateDeviceRequest updateDeviceRequest)
+        public async Task<IActionResult> UpdateDevice([FromRoute] Guid deviceId, [FromBody] UpdateDeviceRequest updateDeviceRequest)
         {
-            var device = await _devicesService.UpdateDevice(updateDeviceRequest);
+            var device = await _devicesService.UpdateDevice(deviceId, updateDeviceRequest);
             return Ok(DeviceDto.Map(device));
         }
 
-        [HttpDelete("RemoveDevice")]
-        [Produces("application/json")]
-        public async Task<IActionResult> RemoveDevice(Guid id)
+        [HttpDelete("devices/{deviceId}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        public async Task<IActionResult> RemoveDevice([FromRoute] Guid deviceId)
         {
-            await _devicesService.RemoveDevice(id);
-            return Ok();
+            await _devicesService.DeleteDevice(deviceId);
+            return NoContent();
         }
 
-        [HttpGet("GetDevice/{id}")]
-        [Produces("application/json")]
-        public async Task<IActionResult> GetDevice(Guid id)
+        [HttpGet("devices/{deviceId}")]
+        [ProducesResponseType(typeof(DeviceDto), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetDevice([FromRoute] Guid deviceId)
         {
-            return Ok(await _devicesService.GetDevice(id));
+            var device = await _devicesService.GetDevice(deviceId);
+            return Ok(DeviceDto.Map(device));
         }
 
-        [HttpGet("GetDevices")]
-        [Produces("application/json")]
+        [HttpGet("devices")]
+        [ProducesResponseType(typeof(IList<DeviceDto>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetDevices()
         {
-            return Ok(await _devicesService.GetDevices());
+            var devices = await _devicesService.GetDevices();
+            return Ok(DeviceDto.Map(devices));
         }
     }
 }

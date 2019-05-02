@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using MarketPlaceApi.Models.Entities;
 
 namespace MarketPlaceApi.DTO
@@ -11,6 +13,7 @@ namespace MarketPlaceApi.DTO
         public string Type { get; set; }
         public Guid? ClientId { get; set; }
         public Guid? BuildingId { get; set; }
+
         public static DeviceDto Map(Device device)
         {
             return new DeviceDto
@@ -22,6 +25,11 @@ namespace MarketPlaceApi.DTO
                 ClientId = device.ClientId,
                 BuildingId = device.BuildingId
             };
+        }
+
+        public static IList<DeviceDto> Map(IEnumerable<Device> devices)
+        {
+            return devices.Select(Map).ToList();
         }
     }
 }

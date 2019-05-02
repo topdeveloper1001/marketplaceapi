@@ -7,7 +7,7 @@ namespace MarketPlaceApi.DTO.Requests
 {
     public class CreatePointRequest
     {
-        public UpdateDeviceRequest Device { get; set; }
+        public Guid? DeviceId { get; set; }
         public string Description { get; set; }
         public string Name { get; set; }
         public string ObjectType { get; set; }

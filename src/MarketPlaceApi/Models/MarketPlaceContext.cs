@@ -8,6 +8,7 @@ namespace MarketPlaceApi.Models
         public MarketPlaceContext(DbContextOptions<MarketPlaceContext> options)
             : base(options)
         {
+            this.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         public DbSet<Device> Devices { get; set; }
