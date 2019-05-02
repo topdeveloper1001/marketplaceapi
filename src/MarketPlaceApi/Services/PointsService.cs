@@ -42,22 +42,10 @@ namespace MarketPlaceApi.Services
                 AddedBy = createPointRequest.AddedBy
             };
 
-            if (createPointRequest.Device != null
-                && createPointRequest.Device.Id != Guid.Empty)
+            if (createPointRequest.DeviceId != null)
             {
-                var device = await _MarketPlaceContext.Devices.FindAsync(createPointRequest.Device.Id);
+                var device = await _MarketPlaceContext.Devices.FindAsync(createPointRequest.DeviceId.Value);
                 point.Device = device;
-            }
-            else if(createPointRequest.Device != null)
-            {
-                point.Device = new Device()
-                {
-                    DeviceIdentifier = createPointRequest.Device.DeviceIdentifier,
-                    IpAddress = createPointRequest.Device.IpAddress,
-                    Type = createPointRequest.Device.Type,
-                    ClientId = createPointRequest.Device.ClientId,
-                    BuildingId = createPointRequest.Device.BuildingId
-                };
             }
             _MarketPlaceContext.Points.Add(point);
             await _MarketPlaceContext.SaveChangesAsync();
@@ -79,25 +67,11 @@ namespace MarketPlaceApi.Services
                 existingPoint.LastUpdated = updatePointRequest.LastUpdated;
                 existingPoint.AddedBy = updatePointRequest.AddedBy;
 
-
-                if (updatePointRequest.Device != null
-                    && updatePointRequest.Device.Id != Guid.Empty)
+                if (updatePointRequest.DeviceId != null)
                 {
-                    var device = await _MarketPlaceContext.Devices.FindAsync(updatePointRequest.Device.Id);
+                    var device = await _MarketPlaceContext.Devices.FindAsync(updatePointRequest.DeviceId);
                     existingPoint.Device = device;
                 }
-                else if(updatePointRequest.Device != null)
-                {
-                    existingPoint.Device = new Device()
-                    {
-                        DeviceIdentifier = updatePointRequest.Device.DeviceIdentifier,
-                        IpAddress = updatePointRequest.Device.IpAddress,
-                        Type = updatePointRequest.Device.Type,
-                        ClientId = updatePointRequest.Device.ClientId,
-                        BuildingId = updatePointRequest.Device.BuildingId
-                    };
-                }
-
 
                 _MarketPlaceContext.Points.Update(existingPoint);
                 await _MarketPlaceContext.SaveChangesAsync();

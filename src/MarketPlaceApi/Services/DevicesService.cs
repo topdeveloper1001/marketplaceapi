@@ -10,24 +10,25 @@ namespace MarketPlaceApi.Services
 {
     public interface IDevicesService
     {
-        Task<Device> AddDevice(CreateDeviceRequest createDeviceRequest);
-        Task<Device> UpdateDevice(UpdateDeviceRequest updateDeviceRequest);
-        Task<IEnumerable<Device>> GetDevices();
-        Task<Device> GetDevice(Guid id);
-        Task RemoveDevice(Guid id);
+        Task<Device> CreateDevice(CreateDeviceRequest createDeviceRequest);
+        Task<Device> UpdateDevice(Guid deviceId, UpdateDeviceRequest updateDeviceRequest);
+        Task<IList<Device>> GetDevices();
+        Task<Device> GetDevice(Guid deviceId);
+        Task DeleteDevice(Guid deviceId);
     }
+
     public class DevicesService : IDevicesService
     {
         private readonly ILogger<DevicesService> _logger;
-        private readonly MarketPlaceContext _MarketPlaceContext;
+        private readonly MarketPlaceContext _dbContext;
 
         public DevicesService(MarketPlaceContext marketPlaceContext, ILogger<DevicesService> logger)
         {
             _logger = logger;
-            _MarketPlaceContext = marketPlaceContext;
+            _dbContext = marketPlaceContext;
         }
 
-        public async Task<Device> AddDevice(CreateDeviceRequest createDeviceRequest)
+        public async Task<Device> CreateDevice(CreateDeviceRequest createDeviceRequest)
         {
             var device = new Device
             {
@@ -39,55 +40,51 @@ namespace MarketPlaceApi.Services
                 BuildingId = createDeviceRequest.BuildingId
             };
 
-            _MarketPlaceContext.Devices.Add(device);
-            await _MarketPlaceContext.SaveChangesAsync();
+            _dbContext.Devices.Add(device);
+            await _dbContext.SaveChangesAsync();
 
             return device;
         }
 
-        public async Task<Device> UpdateDevice(UpdateDeviceRequest updateDeviceRequest)
+        public async Task<Device> UpdateDevice(Guid deviceId, UpdateDeviceRequest updateDeviceRequest)
         {
-            var existingDevice = await _MarketPlaceContext.Devices.FindAsync(updateDeviceRequest.Id);
-            if (existingDevice != null)
-            {
-                existingDevice.DeviceIdentifier = updateDeviceRequest.DeviceIdentifier;
-                existingDevice.IpAddress = updateDeviceRequest.IpAddress;
-                existingDevice.Type = updateDeviceRequest.Type;
-                existingDevice.ClientId = updateDeviceRequest.ClientId;
-                existingDevice.BuildingId = updateDeviceRequest.BuildingId;
-                
-                _MarketPlaceContext.Devices.Update(existingDevice);
-                await _MarketPlaceContext.SaveChangesAsync();
-            }
-            else
+            var existingDevice = await _dbContext.Devices.AsTracking().FirstOrDefaultAsync(d => d.Id == deviceId);
+            if (existingDevice == null)
             {
                 throw new KeyNotFoundException();
             }
+
+            existingDevice.DeviceIdentifier = updateDeviceRequest.DeviceIdentifier;
+            existingDevice.IpAddress = updateDeviceRequest.IpAddress;
+            existingDevice.Type = updateDeviceRequest.Type;
+            existingDevice.ClientId = updateDeviceRequest.ClientId;
+            existingDevice.BuildingId = updateDeviceRequest.BuildingId;
+
+            _dbContext.Devices.Update(existingDevice);
+            await _dbContext.SaveChangesAsync();
             return existingDevice;
         }
 
-        public async Task<IEnumerable<Device>> GetDevices()
+        public async Task<IList<Device>> GetDevices()
         {
-            return await _MarketPlaceContext.Devices.ToListAsync();
+            return await _dbContext.Devices.ToListAsync();
         }
 
-        public async Task<Device> GetDevice(Guid id)
+        public async Task<Device> GetDevice(Guid deviceId)
         {
-            return await _MarketPlaceContext.Devices.FindAsync(id);
+            return await _dbContext.Devices.FindAsync(deviceId);
         }
 
-        public async Task RemoveDevice(Guid id)
+        public async Task DeleteDevice(Guid deviceId)
         {
-            var existingDevice = await _MarketPlaceContext.Devices.FindAsync(id);
-            if (existingDevice != null)
-            {
-                _MarketPlaceContext.Devices.Remove(existingDevice);
-                await _MarketPlaceContext.SaveChangesAsync();
-            }
-            else
+            var existingDevice = await _dbContext.Devices.AsTracking().FirstOrDefaultAsync(d => d.Id == deviceId);
+            if (existingDevice == null)
             {
                 throw new KeyNotFoundException();
             }
+
+            _dbContext.Devices.Remove(existingDevice);
+            await _dbContext.SaveChangesAsync();
         }
     }
 }
